@@ -254,4 +254,5 @@ l.out <- BatchGetSymbols(tickers = my.tickers,
                          bench.ticker = bench.ticker,
                          thresh.bad.data = thresh.bad.data,
                          cache.folder = cache.folder)
+```
 
