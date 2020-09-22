@@ -1,0 +1,107 @@
+## Introdução
+
+A primeira etapa de uma pesquisa é a importação de dados. 
+
+Objetivos da aula:
+
+- Aprender a importar e exportar dados contidos em arquivos locais
+
+- Aprender a importar dados de forma dinâmica,utilizando pacotes especializados e uma conexão da internet. 
+
+## Formatos de armazenamento
+
+- Dados delimitados em texto (csv)
+- Microsoft Excel (xls, xlsx);
+- Arquivos nativos do R (RData e rds)
+- Formato fst (fst)
+- SQLite (SQLITE)
+- Texto não estruturado (txt).
+
+Em geral o formato mais flexível  e utilizado é *.csv*
+
+## Mostrando o diretório de trabalho
+
+É com base nesse diretório o R procura os arquivos para importar dados. 
+
+É nesse mesmo diretório que o R salva arquivos. 
+
+```{r}
+my.dir <-getwd()
+print(my.dir)
+```
+
+O resultado apresenta a pasta a onde os arquivos serão salvos e resgatados. ** O Rcloud não permite a mudança no diretório.** 
+
+## Importando arquivos CSV
+
+Os arquivos CSV são bastante utilizados para disponibilização de dados. É um formato bem antigo e que utiliza vírgulas para separação dos valores. No entanto, implementações mais sofisticadas utilizam aspas duplas (“”) entorno do conteúdo e podem ter outro tipo de separador, como o ponto e vírgula (;).
+
+Como sugestão para evitar problemas, antes de prosseguir para a importação de dados em um arquivo .csv, deve-se abrir o arquivo em um editor de texto qualquer e verificar:
+
+- A existência de texto antes dos dados e a necessidade de ignorar algumas linhas iniciais;
+
+- A existência ou não dos nomes das colunas;
+
+- O símbolo separador de colunas;
+
+- O símbolo de decimal, o qual deve ser o ponto (.).
+
+
+---
+
+Um pacote bastante popular para a importação de arquivos CSV é o readr. Caso não o tenha instalado, faça a instalação e carregue o mesmo utilizando:
+
+```{r, eval = FALSE}
+#install.packages("readr")
+
+library(readr)
+
+dmpl <- read_csv("DF+Consolidado+-+Demonstração
+                 +das+Mutações+do+Patrimônio+Líquido.csv")
+
+View(dmpl)
+
+```
+
+
+---
+
+Agora, vamos checar a classe das nossas colunas. Para isso, utilizamos a função *glimpse* do pacote *dplyr*:
+
+```{r, eval=FALSE}
+#install.packages("dplyr")
+
+library(dplyr)
+
+# print column classes
+dplyr::glimpse(dmpl)
+
+#ou
+
+str(dmpl)
+
+```
+**NOTA**: O uso da mensagem com as classes das colunas é particularmente útil quando o arquivo importado tem várias colunas e a definição manual de cada classe exige muita digitação.
+
+## Importando arquivos Excel (xls e xlsx)
+
+Por exemplo: dados históricos do Tesouro Direto são disponibilizados como arquivos .xls no site do tesouro nacional <https://sisweb.tesouro.gov.br/apex/f?p=2501:9::::9:P9_ID_PUBLICACAO_ANEXO:9280>.
+
+
+Os principais pacotes para importar esses tipos de arquivo são: XLConnect (Mirai Solutions GmbH 2016), xlsx (Dragulescu 2014) e readxl (Wickham 2016a).
+
+---
+
+```{r, eval=FALSE}
+
+#install.packages('readxl')
+
+library(readxl)
+# read xlsx into dataframe
+my.df <- read_excel("Anexos_Balanço_TD 
+                    +- Julho 20.xls", sheet = "1.1")
+View(my.df)
+
+# glimpse contents
+glimpse(my.df)
+```

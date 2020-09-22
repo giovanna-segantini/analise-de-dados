@@ -1,0 +1,260 @@
+---
+title: |
+  ![](ufrn.png){height=0.5cm, width=1in}
+  "Operações básicas com o R"
+author: "Giovanna Segantini"
+
+date: "giovanna.ufrn@gmail.com"
+output:
+  beamer_presentation: default
+  pdf_document: default
+  
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE)
+```
+
+## Explicando a tela 
+
+Como primeiro exercício, clique em um novo projeto, em seguida selecione *file*, *New File* e *R Script*. Deve aparecer algo como essa imagem:
+\begin{center}
+    \includegraphics[width=0.5\textwidth]{RStudio2.png}
+\end{center}
+
+**Editor de scripts** (Script editor) utilizado para escrever *scripts* inteiros.
+**Console do R** (R prompt) testa os códigos e apresenta os resultados dos comandos inseridos no editor.
+**Environment** mostra todos os objetos, funções e históricos atualmente disponível para o usuário. 
+**Panel Packages** apresenta os pacotes instalados e carregados pelo R, assim como os arquivos (*files*), figuras e resultados dinâmicos. 
+
+## Executando códigos em um *Script*
+
+
+Atalhos são muito úteis para a execução do *script*:
+
+**control+shift+s** executa o arquivo atual do RStudio, sem mostrar comandos no prompt (sem eco);
+
+**control+shift+enter** executa o arquivo atual, mostrando comandos na tela (com eco);
+**control+enter** executa a linha selecionada, mostrando comandos na tela;
+
+**control+shift+b** executa os códigos do início do arquivo até a linha atual onde o cursor se encontra;
+
+**control+shift+e** executa os códigos da linha onde o cursor se encontra até o final do arquivo.
+
+Limpar o console **ctrl + l**
+
+
+
+## Objetos e Funções
+No R, tudo é objeto, e cada tipo de objeto tem suas propriedades. 
+
+O que é um objeto?
+Um símbolo ou uma variável capaz de armazenar qualquer valor ou estrutura de dados
+
+Programação:
+
+\begin{center}
+Objetos ->   Classes
+\end{center}
+
+Classe:descreve a forma do objeto e como ele será manipulado pelas diferentes funções. O R possui 5 classes básicas de objetos, também chamados de objetos “atômicos”:
+
+-character
+
+-numeric
+
+-integer
+
+-complex
+
+-logical
+
+## Criando objetos 
+
+
+Pode-se definir um objeto com o uso do comando <-. O símbolo <- é chamado de operador de atribuição. Ele serve para atribuir valores a objetos, e é formado pelos símbolos < e -, obrigatoriamente sem espaços.
+
+```{r}
+#Criando a variável a
+a <- 2
+```
+
+A variável a recebe o valor 2 (tornando-se um objeto dentro do R):
+
+```{r}
+#Para ver o conteúdo do objeto:
+a 
+
+#verificando as classes
+class(a)
+```
+---
+
+O R executa o código procurando objetos e funções disponíveis. Se tentarmos acessar um objeto que não existe, o R irá dar como resultado uma mensagem de erro, como a seguir:
+
+```{r, error=TRUE}
+#Para ver o conteúdo do objeto:
+print(f)
+```
+
+**Observação: O símbolo = pode ser usado no lugar de <- mas não é recomendado. O símbolo de = é usado para funções.**
+
+**Nomes de objetos**: 
+- Podem ser formados por letras, números, “_”, e “.”
+- Não podem começar com número e$/$ou ponto; 
+- Não podem conter espaços; 
+- Evite usar acentos; 
+- Evite usar nomes de funções como:
+c q t C D F I T diff df data var pt
+- O R é case-sensitive, portanto:
+dados $\neq$ Dados $\neq$ DADOS
+
+
+## Criando Vetores
+
+Características:Coleção ordenada de valores, com uma estrutura unidimensional
+
+Usando a função $c()$ para criar vetores:
+
+```{r}
+num <- c(1,2,3,4,5,6) 
+num
+class(num)
+```
+
+Vetores também podem ter outras classes:
+```{r}
+caracter <- c("brava", "joaquina", "armação")
+class(caracter)
+
+```
+
+
+
+
+## Data frame
+Características: é uma lista de vetores e/ou fatores, de mesmo comprimento, que pode conter diferentes tipos de dados (numérico, fator, …), sendo assim uma estrutura bidimensional
+
+Utilizando a função data.frame():
+
+```{r}
+da <- data.frame(ano = 2000:2004,
+                 prod = c(32, 54, 25, 48, 29))
+class(da)
+## Estrutura dos dados
+str(da)
+```
+---
+
+Selecionar variáveis em um data frame é bastante simples usando a sintaxe: df$x. Onde df é o *data frame* e *x* a variável que desejamos selecionar. 
+
+
+```{r}
+da$ano
+```
+
+**NOTA**: O RStudio auxilia bastante no trabalho com data frames. Ao digitarmos $ após o nome do nosso objeto, uma lista das variáveis irá aparecer para seleção. Além de economizar tempo, tal função reduz a ocorrência de erros.
+
+Já para selecionar um elemento da variável *x*, podemos escrever:
+
+```{r}
+da$ano[3]
+```
+---
+
+Uma função bastante importante para selecionarmos dados conforme vários critérios e de forma mais intuitiva é a *subset()*. Ao trabalharmos com grandes data frames uma seleção mais intuitiva facilita a vida não só de quem está escrevendo o código como também a de quem irá ler o mesmo.
+
+Suponha que desejamos dados apenas dos anos 2002 e 2003. A seleção pode ser feita facilmente da seguinte forma:
+
+```{r}
+subset(da, prod>50 & prod<70)
+
+subset(da, ano == 2002 | ano== 2003)
+
+```
+
+
+## Funções 
+
+As funções no R são definidas como:
+
+nome(argumento1, argumento2, ...)
+
+```{r}
+mean(num)
+```
+
+Exemplo: função runif() (para gerar valores aleatórios de uma distribuição uniforme):
+
+```{r}
+runif(n=10, min = 0, max = 1)
+help(runif)
+```
+
+```{r, cars, fig.cap="A scatterplot."}
+plot(cars)
+```
+---
+
+## Gerenciando a área de trabalho
+
+Liste os objetos criados com a função ls$()$:
+
+```{r}
+ls()
+```
+
+Para remover apenas um objeto:
+
+```{r}
+rm(a)
+```
+
+
+Para remover outros objetos:
+
+```{r}
+rm(caracter, num)
+```
+
+Para remover todos os objetos:
+```{r}
+rm(list = ls())
+```
+
+**Cuidado! O comando acima apaga todos os objetos na sua área de trabalho sem perguntar. Depois só é possível recuperar os objetos ao rodar os script novamente.**
+
+## Pacotes do R 
+
+Pacotes representam um conjunto de procedimentos agrupados em uma coleção de funções e voltados para a resolução de um problema qualquer. 
+
+Podem ser instalados de diferentes fontes, com as principais sendo CRAN (The Comprehensive R Archive Network), R-Forge e Github. 
+
+A lista completa de pacotes disponíveis no CRAN, juntamente com uma breve descrição, pode ser acessada no link packages do site do R - <https://cran.r-project.org/.> 
+
+Outra fonte importante para o encontro de pacotes é o Task Views <https://cran.r-project.org/web/views/>, em que são destacados os principais pacotes de acordo com a área e o tipo de uso.
+
+
+---
+
+### Instalando Pacotes do CRAN
+
+Para instalar um pacote, basta utilizar o comando install.packages. Como exemplo, vamos instalar um pacote que será utilizado nos capítulos futuros, o readr:
+
+install.packages('readr')
+install.packages('tidyverse')
+
+
+
+### Carregando Pacotes
+
+Dentro de uma rotina de pesquisa, utilizamos a função *library* para carregar um pacote.
+
+```{r}
+library(readr)
+```
+
+
+
+
+
+
