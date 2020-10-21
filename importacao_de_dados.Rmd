@@ -111,13 +111,6 @@ Os principais pacotes para importar esses tipos de arquivo são: XLConnect (Mira
 #install.packages("readxl")
 
 library(readxl)
-# read xlsx into dataframe
-my.df <- read_excel("Anexos_Balanço_TD 
-                    +- Julho 20.xls", sheet = "1.1")
-View(my.df)
-
-# glimpse contents
-dplyr::glimpse(my.df)
 
 #Ajustando a importação do banco de dados
 my.df <- read_excel("cotacoes.xlsx", skip=1)
@@ -153,7 +146,7 @@ View(Segmentao_Mercado)
 - GetHFData: dados de alta frequëncia na B3.
 - GetTDData: preços e retorno do Tesouro Direto
 
-## Carregando os pacotes
+## Instalando os pacotes
 
 
 ```{r, eval=FALSE}
@@ -245,9 +238,12 @@ first.date <- Sys.Date()-30
 last.date <- Sys.Date()
 thresh.bad.data <- 0.95   # sets percent threshold for bad data
 bench.ticker <- '^BVSP'   # set benchmark as ibovespa
-cache.folder <- 'data/BGS_Cache' # set folder for cache
+cache.folder <- 'BGS_Cache' # set folder for cache
 
+````
+---
 
+```{r, eval = FALSE}
 l.out <- BatchGetSymbols(tickers = my.tickers,
                          first.date = first.date,
                          last.date = last.date,
@@ -255,4 +251,93 @@ l.out <- BatchGetSymbols(tickers = my.tickers,
                          thresh.bad.data = thresh.bad.data,
                          cache.folder = cache.folder)
 ```
+
+## GetDFPData
+
+Pacote GetDFPData (Perlin 2017) fornece uma interface aberta para todas as demonstrações financeiras distribuídas pela B3 e pela CVM nos sistemas DFP, FRE e FCA.
+
+Usuários podem selecionar as empresas disponíveis, o intervalo de datas e baixar os dados como uma planilha do Excel ou um arquivo compactado com vários arquivos csv.
+
+Leia mais sobre o pacote <http://bibliotecadigital.fgv.br/ojs/index.php/rbfin/article/view/78654/77107>
+
+---
+
+```{r}
+library(GetDFPData)
+
+df.info <- gdfpd.get.info.companies(type.data = 
+                                      'companies')
+```
+
+
+```{r}
+dplyr::glimpse(df.info)
+```
+---
+
+Essa tabela disponibiliza os identificadores numéricos das empresas, setores de atividades, atual segmento de governança, tickers negociados na bolsa e situação atual (ativa ou não). 
+
+A função *gdfpd.search.company* permite que o usuário procure o nome oficial de uma instituição.
+
+```{r}
+gdfpd.search.company("ambev")
+```
+
+---
+
+Usamos a função principal do pacote, gdfpd.GetDFPData, para baixar informações.
+
+```{r, eval= FALSE}
+library(GetDFPData)
+library(dplyr)
+
+# set options
+name.companies <- 'AMBEV S.A.'
+first.date <- '2017-12-31'
+last.date  <- '2018-12-31'
+```
+
+```{r, eval= FALSE}
+# download data
+df.reports <- gdfpd.GetDFPData(name.companies = name.companies,
+                               first.date = first.date,
+                               last.date = last.date)
+```
+
+---
+
+O objeto resultante de *gdfpd.GetDFPData* é um tibble, um tipo de objeto tabular que permite colunas do tipo lista. Vamos dar uma olhada no conteúdo de *df.reports*:
+
+```{r, eval=FALSE}
+dplyr::glimpse(df.reports)
+```
+Para uma melhor visualização dos demostrativos financeiros, o pacote também inclui função *gdfpd.convert.to.wide* para converter os dados para formato wide, com as datas preenchendo colunas. Veja a seguir:
+
+```{r, eval=FALSE}
+# convert assets to wide
+df.assets <- df.reports$fr.assets[[1]]
+fr.assets.wide <- gdfpd.convert.to.wide(fr.assets)
+
+# display it
+print(fr.assets.wide)
+
+```
+
+### Exportação dos dados usando o pacote GetDFPData
+
+
+A exportação dos dados também é fácil, basta selecionar um formato ('csv' ou 'xlsx') e usar *gdfpd.export.DFP.data*:
+
+
+```{r, eval=FALSE}
+my.basename <- 'MyExcelData'
+my.type.export <- 'xlsx'
+
+
+gdfpd.export.DFP.data(df.reports = df.reports,
+                      base.file.name = my.basename,
+                      type.export = my.type.export)
+
+```
+O arquivo Excel resultante conterá cada tabela de df.reports em uma aba diferente da planilha.
 

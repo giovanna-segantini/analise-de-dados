@@ -1,0 +1,413 @@
+---
+title: |
+  ![](ufrn.png){height=0.5cm, width=1in} 
+  \newline
+  Análise descritiva - Uma visão univariada
+author: "Giovanna Segantini"
+date: "giovanna.ufrn@gmail.com"
+output: beamer_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Introdução
+
+A análise univariada consiste basicamente em, para cada uma das variáveis individualmente: 
+
+Classificar a variável quanto a seu tipo: 
+
+- **Qualitativas (categóricas)**
+
+-nominais
+
+-ordinais
+
+- **Quantitativas**
+
+-discretas
+
+-contínuas
+
+
+Obter tabelas, gráficos e/ou medidas que resumam a variável
+A partir destes resultados pode-se montar um resumo geral dos dados.
+
+## Importando dados
+
+O livro "Estatística Básica" de W. O. Bussab e P. A. Morettin traz no segundo capítulo um conjunto de dados hipotético de atributos de 36 funcionários da companhia "Milsa". Consulte o livro para mais detalhes sobre este dados.
+
+```{r,tiny=TRUE, out.width='\\textwidth'}
+
+milsa <- read.delim("C:/Users/gato/Desktop/Github/analise-de-dados/milsa.txt")
+#milsa <- read.delim("C:/Users/gato/
+#Desktop/Github/analise-de-dados/milsa.txt")
+
+
+View(milsa)
+
+class(milsa)
+```
+---
+
+E para conferir a estrutura dos dados podemos usar algumas funções como:
+
+```{r}
+str(milsa)
+```
+
+---
+
+Podemos classificar todas as variáveis desse conjunto de dados como:
+
+Variável|	Classificação
+---------|-------------
+`Funcionario`	| Quantitativa discreta
+`Est.civil`	| Qualitativa nominal
+`Inst` |	Qualitativa ordinal
+`Filhos` |	Quantitativa discreta
+`Salario` |	Quantitativa contínua
+`Anos` |	Quantitativa contínua
+`Meses` |	Quantitativa contínua
+`Regiao` |	Qualitativa nominal
+
+---
+
+Como a variável Inst é qualitativa ordinal, podemos indicar que ela deve ser tratada como ordinal:
+
+```{r, eval= FALSE}
+class(milsa$Inst)
+
+milsa$Inst <- as.factor(milsa$Inst)    
+
+levels(milsa$Inst)
+```
+já notamos que a ordenação está correta (da esquerda para a direita), pois sabemos que a classificação interna dos níveis é por ordem alfabética, e nesse caso, por coincidência, a ordem já está na sequência correta. Mesmo assim, podemos indicar que este fator é ordinal, usando o argumento *ordered* da função *factor()*
+
+```{r, eval=FALSE}
+milsa$Inst <- factor(milsa$Inst, ordered = TRUE)
+```
+
+## Criando variável
+Podemos ainda definir uma nova variável, chamada **Idade**, a partir das variáveis **Anos** e **Meses**:
+
+```{r}
+milsa$Idade <- milsa$Ano + milsa$Meses/12
+```
+## Análise univariada
+
+A seguir vamos mostrar como obter tabelas, gráficos e medidas com o R. Para isto vamos selecionar uma variável de cada tipo para que o leitor possa, por analogia, obter resultados para as demais.
+
+## Variável qualitativa nominal
+
+A variável *Est.civil* é uma qualitativa nominal. Desta forma podemos obter: 
+(i) uma tabela de frequências (absolutas e/ou relativas), (ii) um gráfico de setores, 
+(iii) a “moda”, i.e. o valor que ocorre com maior frequência.
+
+```{r }
+class(milsa$Est.civil)
+```
+
+## Variável qualitativa nominal
+
+- Frequência 
+
+```{r }
+## Frequência absoluta
+civil.tb <- table(milsa$Est.civil)
+civil.tb
+
+## Frequência relativa, calculando manualmente
+civil.tb/length(milsa$Est.civil)
+
+## Frequência relativa, com a função prop.table()
+prop.table(civil.tb)
+```
+## Variável qualitativa nominal
+- Gráficos
+
+Os gráficos de barras e de setores são adequados para representar esta variável. 
+
+```{r, eval = FALSE}
+barplot(civil.tb)
+pie(civil.tb)
+```
+## Variável qualitativa nominal
+
+-Moda
+
+```{r}
+# Moda
+getmode <- function(x) {
+  na.x<- na.omit(x)
+  ux <- unique(na.x)
+  tab <- tabulate(match(na.x, ux))
+  ux[tab == max(tab)]
+}
+
+getmode(milsa$Est.civil)
+```
+
+## Variável Qualitativa Ordinal
+Para exemplificar como obter análises para uma variável qualitativa ordinal vamos selecionar a variável Inst.
+
+- Frequências 
+
+```{r}
+## Frequência absoluta
+inst.tb <- table(milsa$Inst)
+inst.tb
+
+## Frequência relativa
+prop.table(inst.tb)
+```
+
+## Variável Qualitativa Ordinal
+
+O gráfico de setores não é adequado para este tipo de variável por não expressar a ordem dos possíveis valores. Usamos então apenas um gráfico de barras conforme mostrado abaixo:
+
+```{r, eval=FALSE}
+
+barplot(inst.tb)
+
+## Menor para maior
+barplot(sort(inst.tb))
+
+## Maior para menor
+barplot(sort(inst.tb, decreasing = TRUE))
+```
+
+## Variável Qualitativa Ordinal
+
+- Moda
+
+```{r}
+getmode(milsa$Inst)
+
+# Moda
+names(inst.tb)[which.max(inst.tb)]
+```
+## Variável quantitativa discreta
+
+Vamos agora usar a variável Filhos (número de filhos) para ilustrar algumas análises que podem ser feitas com uma quantitativa discreta.
+
+- Frequências
+
+Frequências absolutas e relativas são obtidas como anteriormente.
+
+```{r}
+## Frequência absoluta
+filhos.tb <- table(milsa$Filhos)
+filhos.tb
+
+## Frequência relativa
+filhos.tbr <- prop.table(filhos.tb)
+filhos.tbr
+
+```
+---
+
+Também vamos calcular a frequência acumulada, onde a frequência em uma classe é a soma das frequências das classes anteriores. Para isso usamos a função *cumsum()*, que já faz a soma acumulada.
+
+```{r}
+## Frequência acumulada
+filhos.tba <- cumsum(filhos.tbr)
+filhos.tba
+```
+
+
+## Variável quantitativa discreta
+
+Para a representação gráfica de frequências absolutas de uma variável discreta usarems um gráfico semelhante ao de barras, mas nesse caso, as frequências são indicadas por linhas.
+
+```{r, fig.height=5.5}
+plot(filhos.tb)
+```
+
+## Variável quantitativa discreta
+Outra possibilidade seria fazer gráficos de frequências relativas e de frequências acumuladas conforme mostrado na
+
+```{r, fig.height=5.5}
+## Frequência relativa
+plot(filhos.tbr)
+```
+
+---
+
+```{r, fig.height=5.5}
+## Frequência relativa acumulada
+plot(filhos.tba, type = "S") # tipo step (escada)
+
+```
+
+## Medidas resumo
+
+A seguir mostramos como obter algumas medidas de posição: moda, mediana, média. Note que o argumento na.rm = TRUE é necessário porque não há informação sobre número de filhos para alguns indivíduos (NA)
+
+
+
+```{r}
+
+## Moda
+names(filhos.tb)[which.max(filhos.tb)]
+
+## Mediana
+median(milsa$Filhos, na.rm = TRUE)
+
+## Média
+mean(milsa$Filhos, na.rm = TRUE)
+```
+
+---
+
+ Pode-se calcular a média aparada, na qual usamos o argumento trim = 0.1 que indica que a média deve ser calculada excluindo-se 10% dos menores e 10% dos maiores valores do vetor de dados. 
+
+```{r}
+## Média aparada
+mean(milsa$Filhos, trim = 0.1, na.rm = TRUE)
+```
+
+- Quartis
+
+```{r}
+## Quartis
+quantile(milsa$Filhos, na.rm = TRUE)
+
+```
+
+---
+
+Passando agora para medidas de dispersão, vejamos como obter máximo e mínimo, e com isso a amplitude.
+
+```{r}
+## Máximo e mínimo
+max(milsa$Filhos, na.rm = TRUE)
+
+min(milsa$Filhos, na.rm = TRUE)
+
+## As duas informações juntas
+range(milsa$Filhos, na.rm = TRUE)
+
+## Amplitude é a diferença entre máximo e mínimo
+diff(range(milsa$Filhos, na.rm = TRUE))
+```
+
+---
+
+A variância, desvio padrão, e coeficiente de variação. 
+
+```{r}
+## Variância
+var(milsa$Filhos, na.rm = TRUE)
+
+## Desvio-padrão
+sd(milsa$Filhos, na.rm = TRUE)
+
+## Coeficiente de variação
+sd(milsa$Filhos, na.rm = TRUE)/
+  + mean(milsa$Filhos, na.rm = TRUE)
+
+```
+
+---
+
+Também obtemos os quartis para calcular a amplitude interquartílica.
+
+```{r}
+## Quartis
+(filhos.qt <- quantile(milsa$Filhos, na.rm = TRUE))
+
+## Amplitude interquartílica
+filhos.qt[4] - filhos.qt[2]
+
+```
+
+---
+
+Finalmente, podemos usar a função genérica *summary()* para resumir od dados de uma só vez
+
+```{r}
+summary(milsa$Filhos)
+```
+
+## Variável quantitativa contínua
+
+Vamos considerar a variável quantitativa contínua Salario.
+
+- Frequência 
+
+Para se fazer uma tabela de frequências de uma VA contínua, é preciso primeiro agrupar os dados em classes. Nos comandos mostrados a seguir verificamos inicialmente os valores máximo e mínimo dos dados, depois usamos o critério de Sturges para definir o número de classes. Usamos a função *cut()* para agrupar os dados em classes e finalmente obtemos as frequências absolutas e relativas.
+
+---
+
+```{r}
+## Máximo e mínimo
+range(milsa$Salario)
+
+## Número de classes estimado, com base
+## no critério de Sturges. 
+## outras opções em ?nclass
+nclass.Sturges(milsa$Salario)
+
+## Criando as classes com a função cut(), 
+## usando os valores mínimos e
+## máximos dados em range()
+salario.cut <- cut(milsa$Salario, breaks = 
+                     + seq(4, 23.3, length.out = 8))
+```
+
+--- 
+
+```{r}
+
+## Tabela com as frequencias absolutas por classe
+salario.tb <- table(salario.cut)
+salario.tb
+
+## Tabela com as frequências relativas
+prop.table(salario.tb)
+
+```
+
+
+## Variável quantitativa contínua
+
+Na sequência vamos mostrar dois possíveis gráficos para variáveis contínuas: o histograma e o box-plot.
+
+```{r, fig.height=5}
+hist(milsa$Salario)
+
+```
+
+## Variável quantitativa contínua
+
+A função hist() possui vários argumentos para alterar o comportamento da saída do gráfico. Por exemplo, com labels = TRUE as frequências são mostradas acima de cada barra. Com freq = FALSE, o gráfico é feito com as frequências relativas.
+
+```{r, fig.height=5}
+hist(milsa$Salario, freq = FALSE, labels = TRUE)
+```
+
+---
+
+Os boxplots são úteis para revelar o centro, a dispersão e a distribuição dos dados, além de outliers. São construídos da seguinte forma:
+
+```{r, fig.height=6}
+boxplot(milsa$Salario)
+```
+
+---
+
+Finalmente, podemos obter as medidas de posição e dispersão da mesma forma que para variáveis discretas. Veja alguns exemplos a seguir. 
+
+```{r}
+summary(milsa$Salario)
+
+var(milsa$Salario)
+
+sd(milsa$Salario)
+
+sd(milsa$Salario)/mean(milsa$Salario)
+
+```

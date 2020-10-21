@@ -1,0 +1,360 @@
+---
+title: |
+  ![](ufrn.png){height=0.5cm, width=1in} 
+  \newline
+  Análise descritiva bivariada
+author: "Giovanna Segantini"
+date: "giovanna.ufrn@gmail.com"
+output: beamer_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Referência
+
+Capítulo 3 - Estatística descritiva bivariada: FÁVERO, Luiz Paulo; BELFIORE, Patrícia. Manual de análise de dados: estatística e modelagem multivariada com Excel®, SPSS® e Stata®. Elsevier Brasil, 2017.
+
+## Objetivos
+
+- Compreender os principais conceitos de esatística descritiva bivariada
+
+- Escolher o(s) método(s) adequado(s) para descrever o comportamento das variáveis
+
+- Gerar tabelas, gráficos e medidas-resumo por meio da linguagem R.
+
+## Introdução
+
+Na análise bivariada, procuramos identificar relações entre duas variáveis.
+
+O tipo de resumo estatístico informativo vai depender dos tipos das variáveis envolvidas.
+
+A seguir, mostramos algumas possibilidades desse tipo de análise. Lembrando que as apresentadas não esgotam as possibilidades de análise envolvendo duas variáveis.  
+
+**Obs. Salientamos que as relações entre duas variáveis devem ser examinadas com cautela, pois podem ser mascaradas por variáveis adicionais, não consideradas na análise**
+
+## Banco de dados
+
+```{r,tiny=TRUE, out.width='\\textwidth'}
+
+milsa <- read.delim("C:/Users/gato/Desktop/Github/analise-de-dados/milsa.txt")
+#milsa <- read.delim("C:/Users/gato/
+#Desktop/Github/analise-de-dados/milsa.txt")
+
+milsa$Inst <- as.factor(milsa$Inst)    
+
+levels(milsa$Inst)
+
+milsa$Inst <- factor(milsa$Inst, ordered = TRUE)
+
+milsa$Idade <- milsa$Ano + milsa$Meses/12
+```
+## Associação entre duas variáveis Qualitativas
+
+O Objetivo é avaliar se existe relação entre as variáveis qualitativas ou categóricas estudadas, além do grau de associação entre elas. 
+
+- Tabelas de frequência cruzadas
+
+- Medidas-resumo: 
+  -chi-quadrado (variáveis nominais e ordinais);
+  -coeficiente Phi(variáveis nominais)
+  -coeficiente de contingência (variáveis nominais)
+  -coeficiente de V de Cramer (variáveis nominais)
+  -coeficiente de Spearman (variáveis ordinais)
+  
+Vamos considerar as variáveis civil (estado civil) e instrução (grau de instrução).
+
+## QUALITATIVA VS QUALITATIVA
+
+Inicialmente obteremos a tabela de Frequências absolutas e relativas 
+
+```{r}
+civ.gi.tb <- table(milsa$Est.civil, milsa$Inst)
+civ.gi.tb
+
+addmargins(civ.gi.tb)
+```
+
+---
+
+Tabelas de frequências relativas são obtidas com *prop.table()*
+
+```{r}
+prop.table(civ.gi.tb)
+
+```
+
+---
+
+Existe também a possibilidade de fazer tabelas de frequência:  
+- Em relação aos totais por linha (margin = 1)
+```{r}
+prop.table(civ.gi.tb, margin = 1)
+```
+
+- Em relação aos totais por coluna (margin = 2)
+
+```{r}
+prop.table(civ.gi.tb, margin = 2)
+
+```
+
+---
+
+
+```{r}
+par(mfrow = c(1,2), oma = c(4,1,1,1))
+
+barplot(civ.gi.tb, legend = T)
+
+barplot(civ.gi.tb, beside = T, legend = T)
+
+```
+
+---
+
+```{r}
+par(mfrow = c(1,2), oma = c(3,1,1,1))
+
+barplot(prop.table(civ.gi.tb), legend = T)
+
+barplot(t(civ.gi.tb), legend = T)
+```
+
+## QUALITATIVA VS QUALITATIVA
+
+- Medidas de associação
+
+As principais medidas que representam a associação entre duas variáveis qualitativas são:
+
+- a estatística qui-quadrado $\chi^2$, utilizada para variáveis qualitativas nominais e ordinais;
+
+- $\phi$ (phi) (é o R de pearson quando aplicado a tabelas 2x2), V de Crámer, Coeficiente de contingência, baseado no $\chi^2$, para variáveis nominais
+
+- o coeficiente de Spearman para variáveis ordinais
+
+## QUALITATIVA VS QUALITATIVA
+
+- Estatística qui-quadrado
+
+A estatística qui-quadrado mede a discrepância entre uma frequência observada e uma frequência esperada, partindo da hipótese de que não há associação entre as variáveis estudadas. Assim, um valor baixo do qui-quadrado indica independência entre as variáveis.
+
+Hipóteses a serem testadas – Teste de independência:
+
+H: A e B são variáveis independentes
+
+A: As variáveis A e B não são independentes
+
+---
+
+```{r}
+summary(civ.gi.tb)
+
+chisq.test(milsa$Est.civil, milsa$Inst)
+```
+
+---
+
+Diante dos resultados a hipótese nula não pode ser rejeitada, ou seja, o estado civil dos funcionários e o grau de instrução são independentes.
+
+---
+
+O teste qui-quadrado quando aplicado a amostras pequenas, como por exemplo com tamanho inferior a 20, veja:
+
+```{r}
+fisher.test(civ.gi.tb)
+
+```
+
+
+--- 
+
+Para saber a internsidade desta relação, utilizam-se medidas de associação.
+
+Considere as seguintes medidas:
+
+-$\phi$ (phi) (é o R de pearson quando aplicado a tabelas 2x2)
+-V de Crámer
+-Coeficiente de contingência
+
+
+Ambos variam de 0 (ausência de associação) a 1 (associação muito forte).
+
+---
+
+```{r, eval = FALSE}
+
+#install.packages("vcd")
+library(vcd)
+
+summary(assocstats(civ.gi.tb))
+
+```
+
+---
+
+## Correlação entre as variáveis Qualitativa e quantitativas
+
+Para exemplificar este caso vamos considerar as variáveis Inst e Salario.
+
+Para se obter uma tabela de frequências é necessário agrupar a variável quantitativa em classes. No exemplo a seguir vamos agrupar a variável salário em 4 classes definidas pelos quartis usando a função cut(). Lembre-se que as classes são definidas por intervalos abertos à esquerda, então usamos o argumento include.lowest = TRUE para garantir que todos os dados, incluve o menor (mínimo) seja incluído na primeira classe. Após agrupar esta variável, obtemos a(s) tabela(s) de cruzamento como mostrado no caso anterior.
+
+---
+
+```{r}
+## Quartis de salario
+quantile(milsa$Salario)
+
+## Classificação de acordo com os quartis
+salario.cut <- cut(milsa$Salario, 
+                   breaks = quantile(milsa$Salario),
+                   include.lowest = TRUE)
+
+
+
+salario.cut
+
+```
+
+---
+
+```{r}
+## Tabela de frequências absolutas
+inst.sal.tb <- table(milsa$Inst, salario.cut)
+inst.sal.tb
+
+prop.table(inst.sal.tb)
+
+```
+
+## Qualitativa vs Quantitativa 
+
+- Gráficos
+
+No gráfico vamos considerar que neste exemplo a instrução deve ser a variável explicativa e portanto colocada no eixo X, e o salário é a variável resposta, e portanto deve ser colocada no eixo Y. Isto é, consideramos que a instrução deve explicar, ainda que parcialmente, o salário.
+
+Vamos então obter um boxplot dos salários para cada nível de instrução. Note que na função abaixo, usamos a notação de fórmula do R, indicando que a variável Salario é explicada, ou descrita, pela variável Inst.
+
+---
+
+```{r}
+boxplot(Salario ~ Inst, data = milsa)
+
+```
+
+--- 
+
+## Qualitativa vs Quantitativa 
+
+Para as medidas descritivas, o usual é obter um resumo da variável quantitativa como mostrado na análise univariada, porém agora informando este resumo para cada nível do fator qualitativo de interesse.
+
+```{r, eval = FALSE}
+with(milsa, tapply(Salario, Inst, summary))
+
+with(milsa, tapply(Salario, Inst, sd))
+
+with(milsa, tapply(Salario, Inst, var))
+
+with(milsa, tapply(Salario, Inst, qunatile))
+
+```
+
+---
+
+## Qualitativa vs Quantitativa 
+
+- Medidas de associação
+
+Independente de ser normal ou nao
+
+- Spearman (amostras maiores)
+- Kendall (amostras pequenas)
+
+```{r warning=FALSE}
+educacao<- as.numeric(milsa$Inst)
+
+```
+
+---
+
+```{r warning=FALSE}
+
+#Exemplo de uso de spearman:
+
+cor(educacao, milsa$Salario, method = "spearman")
+cor.test(educacao, milsa$Salario, method = "spearman")
+```
+
+---
+
+```{r warning=FALSE}
+
+#Exemplo de uso de kendall com uma amostra menor:
+
+cor(educacao, milsa$Salario, method = "kendall")
+cor.test(educacao, milsa$Salario, method = "kendall")
+```
+
+## Correlação entre as variáveis Quatitativa e quantitativa
+
+Para ilustrar este caso vamos considerar as variáveis Salario e Idade. Para se obter uma tabela é necessário agrupar as variáveis em classes conforme fizemos no caso anterior.
+
+---
+
+Nos comandos abaixo, agrupamos as duas variáveis em classes definidas pelos respectivos quartis, gerando portanto uma tabela de cruzamento 4 × 4.
+
+```{r}
+## Classes de Idade
+idade.cut <- with(milsa, cut(Idade, 
+                 breaks = quantile(Idade),                          include.lowest = TRUE))
+
+table(idade.cut)
+
+```
+
+---
+
+```{r}
+## Classes de salario
+salario.cut <- with(milsa, cut(Salario, 
+                    breaks = quantile(Salario),
+                    include.lowest = TRUE))
+
+table(salario.cut)
+```
+
+---
+
+```{r}
+## Tabela cruzada
+table(idade.cut, salario.cut)
+
+prop.table(table(idade.cut, salario.cut))
+```
+
+---
+
+Caso queiramos definir um número menor de classes podemos fazer como no exemplo a seguir onde cada variável é dividida em 3 classes e gerando um tabela de cruzamento 3 × 3.
+
+```{r}
+idade.cut2 <- with(milsa, cut(Idade,
+                    breaks = quantile(Idade, 
+                    seq(0, 1, length = 4)),
+                    include.lowest = TRUE))
+salario.cut2 <- with(milsa, cut(Salario,
+                    breaks = quantile(Salario,
+                    seq(0, 1, length = 4)),
+                    include.lowest = TRUE))
+
+table(idade.cut2, salario.cut2)
+```
+
+## Quantitativa vs Quantitativa
+
+- Diagrama de dispersão
+
+```{r}
+plot(Salario ~ Idade, data = milsa)
+
+```
